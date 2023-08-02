@@ -777,13 +777,15 @@ def rare_analyzer(dataframe, target, cat_cols):
             ),
             end="\n\n\n",
         )
-        
-rare_analyzer(df, "TARGET", cat_cols) 
+
+
+rare_analyzer(df, "TARGET", cat_cols)
 
 
 #############################################
 # 3. Rare encoder'ın yazılması.
 #############################################
+
 
 def rare_encoder(dataframe, rare_perc):
     temp_df = dataframe.copy()
@@ -806,3 +808,115 @@ def rare_encoder(dataframe, rare_perc):
 new_df = rare_encoder(df, 0.01)
 
 rare_analyzer(new_df, "TARGET", cat_cols)
+
+#############################################
+# Feature Scaling (Özellik Ölçeklendirme)
+#############################################
+
+###################
+# StandardScaler: Klasik standartlaştırma. Ortalamayı çıkar, standart sapmaya böl. z = (x - u) / s
+###################
+
+df = load()
+ss = StandardScaler()
+
+df["Age_SScaler"] = ss.fit_transform(df[["Age"]])
+df.describe().T
+
+###################
+# RobustScaler: Medyanı çıkar iqr'a böl.
+###################
+
+rs = RobustScaler()
+df["Age_RScaler"] = rs.fit_transform(df[["Age"]])
+df.describe().T
+
+###################
+# MinMaxScaler: Verilen 2 değer arasında değişken dönüşümü
+###################
+
+# X_std = (X - X.min(axis=0)) / (X.max(axis=0) - X.min(axis=0))
+# X_scaled = X_std * (max - min) + min
+
+mms = MinMaxScaler()
+df["Age_MMScaler"] = mms.fit_transform(df[["Age"]])
+df.describe().T
+
+df.head()
+
+age_cols = [col for col in df.columns if "Age" in col]
+
+
+def num_summary(dataframe, numerical_col, plot=False):
+    quantiles = [0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 0.95, 0.99]
+    print(dataframe[numerical_col].describe(quantiles).T)
+
+    if plot:
+        dataframe[numerical_col].hist(bins=20)
+        plt.xlabel(numerical_col)
+        plt.title(numerical_col)
+        plt.show(block=True)
+
+
+for col in age_cols:
+    num_summary(df, col, plot=True)
+
+
+###################
+# Numeric to Categorical: Sayısal Değişkenleri Kateorik Değişkenlere Çevirme
+# Binning
+###################
+
+df["Age_qcut"] = pd.qcut(df["Age"], 5)
+
+
+#############################################
+# Feature Extraction (Özellik Çıkarımı)
+#############################################
+
+#############################################
+# Binary Features: Flag, Bool, True-False
+#############################################
+
+df = load()
+df.head()
+
+
+df["NEW_CABIN_BOOL"] = df["Cabin"].notnull().astype("int")
+df.groupby("NEW_CABIN_BOOL").agg({"Survived": "mean"})
+
+# Oran testi yapalım
+from statsmodels.stats.proportion import proportions_ztest
+
+test_stat, pvalue = proportions_ztest(
+    count=[
+        df.loc[df["NEW_CABIN_BOOL"] == 1, "Survived"].sum(),
+        df.loc[df["NEW_CABIN_BOOL"] == 0, "Survived"].sum(),
+    ],
+    nobs=[
+        df.loc[df["NEW_CABIN_BOOL"] == 1, "Survived"].shape[0],
+        df.loc[df["NEW_CABIN_BOOL"] == 0, "Survived"].shape[0],
+    ],
+)
+
+print("Test Stat = %.4f, p-value = %.4f" % (test_stat, pvalue))
+
+
+df.loc[((df["SibSp"] + df["Parch"]) > 0), "NEW_IS_ALONE"] = "NO"
+df.loc[((df["SibSp"] + df["Parch"]) == 0), "NEW_IS_ALONE"] = "YES"
+
+df.groupby("NEW_IS_ALONE").agg({"Survived": "mean"})
+
+
+test_stat, pvalue = proportions_ztest(
+    count=[
+        df.loc[df["NEW_IS_ALONE"] == "YES", "Survived"].sum(),
+        df.loc[df["NEW_IS_ALONE"] == "NO", "Survived"].sum(),
+    ],
+    nobs=[
+        df.loc[df["NEW_IS_ALONE"] == "YES", "Survived"].shape[0],
+        df.loc[df["NEW_IS_ALONE"] == "NO", "Survived"].shape[0],
+    ],
+)
+
+print("Test Stat = %.4f, p-value = %.4f" % (test_stat, pvalue))
