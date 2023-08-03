@@ -6,30 +6,22 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
-
 # !pip install missingno
 import missingno as msno
 from datetime import date
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import LocalOutlierFactor
-from sklearn.preprocessing import (
-    MinMaxScaler,
-    LabelEncoder,
-    StandardScaler,
-    RobustScaler,
-)
+from sklearn.preprocessing import MinMaxScaler, LabelEncoder, StandardScaler, RobustScaler
 
-pd.set_option("display.max_columns", None)
-pd.set_option("display.max_rows", None)
-pd.set_option("display.float_format", lambda x: "%.3f" % x)
-pd.set_option("display.width", 500)
-
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_rows', None)
+pd.set_option('display.float_format', lambda x: '%.3f' % x)
+pd.set_option('display.width', 500)
 
 def load_application_train():
-    data = pd.read_csv("./datasets/application_train.csv")
+    data = pd.read_csv("datasets/application_train.csv")
     return data
-
 
 df = load_application_train()
 df.head()
@@ -42,6 +34,7 @@ def load():
 
 df = load()
 df.head()
+
 
 
 #############################################
@@ -97,7 +90,6 @@ def outlier_thresholds(dataframe, col_name, q1=0.25, q3=0.75):
     low_limit = quartile1 - 1.5 * interquantile_range
     return low_limit, up_limit
 
-
 outlier_thresholds(df, "Age")
 outlier_thresholds(df, "Fare")
 
@@ -108,16 +100,12 @@ df[(df["Fare"] < low) | (df["Fare"] > up)].head()
 
 df[(df["Fare"] < low) | (df["Fare"] > up)].index
 
-
 def check_outlier(dataframe, col_name):
     low_limit, up_limit = outlier_thresholds(dataframe, col_name)
-    if dataframe[
-        (dataframe[col_name] > up_limit) | (dataframe[col_name] < low_limit)
-    ].any(axis=None):
+    if dataframe[(dataframe[col_name] > up_limit) | (dataframe[col_name] < low_limit)].any(axis=None):
         return True
     else:
         return False
-
 
 check_outlier(df, "Age")
 check_outlier(df, "Fare")
@@ -128,7 +116,6 @@ check_outlier(df, "Fare")
 
 dff = load_application_train()
 dff.head()
-
 
 def grab_col_names(dataframe, cat_th=10, car_th=20):
     """
@@ -171,16 +158,10 @@ def grab_col_names(dataframe, cat_th=10, car_th=20):
 
     # cat_cols, cat_but_car
     cat_cols = [col for col in dataframe.columns if dataframe[col].dtypes == "O"]
-    num_but_cat = [
-        col
-        for col in dataframe.columns
-        if dataframe[col].nunique() < cat_th and dataframe[col].dtypes != "O"
-    ]
-    cat_but_car = [
-        col
-        for col in dataframe.columns
-        if dataframe[col].nunique() > car_th and dataframe[col].dtypes == "O"
-    ]
+    num_but_cat = [col for col in dataframe.columns if dataframe[col].nunique() < cat_th and
+                   dataframe[col].dtypes != "O"]
+    cat_but_car = [col for col in dataframe.columns if dataframe[col].nunique() > car_th and
+                   dataframe[col].dtypes == "O"]
     cat_cols = cat_cols + num_but_cat
     cat_cols = [col for col in cat_cols if col not in cat_but_car]
 
@@ -190,12 +171,11 @@ def grab_col_names(dataframe, cat_th=10, car_th=20):
 
     print(f"Observations: {dataframe.shape[0]}")
     print(f"Variables: {dataframe.shape[1]}")
-    print(f"cat_cols: {len(cat_cols)}")
-    print(f"num_cols: {len(num_cols)}")
-    print(f"cat_but_car: {len(cat_but_car)}")
-    print(f"num_but_cat: {len(num_but_cat)}")
+    print(f'cat_cols: {len(cat_cols)}')
+    print(f'num_cols: {len(num_cols)}')
+    print(f'cat_but_car: {len(cat_but_car)}')
+    print(f'num_but_cat: {len(num_but_cat)}')
     return cat_cols, num_cols, cat_but_car
-
 
 cat_cols, num_cols, cat_but_car = grab_col_names(df)
 
@@ -216,26 +196,17 @@ for col in num_cols:
 # Aykırı Değerlerin Kendilerine Erişmek
 ###################
 
-
 def grab_outliers(dataframe, col_name, index=False):
     low, up = outlier_thresholds(dataframe, col_name)
 
-    if (
-        dataframe[((dataframe[col_name] < low) | (dataframe[col_name] > up))].shape[0]
-        > 10
-    ):
-        print(
-            dataframe[((dataframe[col_name] < low) | (dataframe[col_name] > up))].head()
-        )
+    if dataframe[((dataframe[col_name] < low) | (dataframe[col_name] > up))].shape[0] > 10:
+        print(dataframe[((dataframe[col_name] < low) | (dataframe[col_name] > up))].head())
     else:
         print(dataframe[((dataframe[col_name] < low) | (dataframe[col_name] > up))])
 
     if index:
-        outlier_index = dataframe[
-            ((dataframe[col_name] < low) | (dataframe[col_name] > up))
-        ].index
+        outlier_index = dataframe[((dataframe[col_name] < low) | (dataframe[col_name] > up))].index
         return outlier_index
-
 
 grab_outliers(df, "Age")
 
@@ -261,12 +232,9 @@ df.shape
 
 df[~((df["Fare"] < low) | (df["Fare"] > up))].shape
 
-
 def remove_outlier(dataframe, col_name):
     low_limit, up_limit = outlier_thresholds(dataframe, col_name)
-    df_without_outliers = dataframe[
-        ~((dataframe[col_name] < low_limit) | (dataframe[col_name] > up_limit))
-    ]
+    df_without_outliers = dataframe[~((dataframe[col_name] < low_limit) | (dataframe[col_name] > up_limit))]
     return df_without_outliers
 
 
@@ -295,12 +263,10 @@ df.loc[(df["Fare"] > up), "Fare"] = up
 
 df.loc[(df["Fare"] < low), "Fare"] = low
 
-
 def replace_with_thresholds(dataframe, variable):
     low_limit, up_limit = outlier_thresholds(dataframe, variable)
     dataframe.loc[(dataframe[variable] < low_limit), variable] = low_limit
     dataframe.loc[(dataframe[variable] > up_limit), variable] = up_limit
-
 
 df = load()
 cat_cols, num_cols, cat_but_car = grab_col_names(df)
@@ -332,14 +298,16 @@ replace_with_thresholds(df, "Age")
 check_outlier(df, "Age")
 
 
+
+
 #############################################
 # Çok Değişkenli Aykırı Değer Analizi: Local Outlier Factor
 #############################################
 
 # 17, 3
 
-df = sns.load_dataset("diamonds")
-df = df.select_dtypes(include=["float64", "int64"])
+df = sns.load_dataset('diamonds')
+df = df.select_dtypes(include=['float64', 'int64'])
 df = df.dropna()
 df.head()
 df.shape
@@ -364,7 +332,7 @@ df_scores[0:5]
 np.sort(df_scores)[0:5]
 
 scores = pd.DataFrame(np.sort(df_scores))
-scores.plot(stacked=True, xlim=[0, 50], style=".-")
+scores.plot(stacked=True, xlim=[0, 50], style='.-')
 plt.show()
 
 th = np.sort(df_scores)[3]
@@ -422,12 +390,8 @@ def missing_values_table(dataframe, na_name=False):
     na_columns = [col for col in dataframe.columns if dataframe[col].isnull().sum() > 0]
 
     n_miss = dataframe[na_columns].isnull().sum().sort_values(ascending=False)
-    ratio = (
-        dataframe[na_columns].isnull().sum() / dataframe.shape[0] * 100
-    ).sort_values(ascending=False)
-    missing_df = pd.concat(
-        [n_miss, np.round(ratio, 2)], axis=1, keys=["n_miss", "ratio"]
-    )
+    ratio = (dataframe[na_columns].isnull().sum() / dataframe.shape[0] * 100).sort_values(ascending=False)
+    missing_df = pd.concat([n_miss, np.round(ratio, 2)], axis=1, keys=['n_miss', 'ratio'])
     print(missing_df, end="\n")
 
     if na_name:
@@ -470,12 +434,7 @@ df["Embarked"].fillna(df["Embarked"].mode()[0]).isnull().sum()
 
 df["Embarked"].fillna("missing")
 
-df.apply(
-    lambda x: x.fillna(x.mode()[0])
-    if (x.dtype == "O" and len(x.unique()) <= 10)
-    else x,
-    axis=0,
-).isnull().sum()
+df.apply(lambda x: x.fillna(x.mode()[0]) if (x.dtype == "O" and len(x.unique()) <= 10) else x, axis=0).isnull().sum()
 
 ###################
 # Kategorik Değişken Kırılımında Değer Atama
@@ -490,13 +449,9 @@ df["Age"].fillna(df.groupby("Sex")["Age"].transform("mean")).isnull().sum()
 
 df.groupby("Sex")["Age"].mean()["female"]
 
-df.loc[(df["Age"].isnull()) & (df["Sex"] == "female"), "Age"] = df.groupby("Sex")[
-    "Age"
-].mean()["female"]
+df.loc[(df["Age"].isnull()) & (df["Sex"]=="female"), "Age"] = df.groupby("Sex")["Age"].mean()["female"]
 
-df.loc[(df["Age"].isnull()) & (df["Sex"] == "male"), "Age"] = df.groupby("Sex")[
-    "Age"
-].mean()["male"]
+df.loc[(df["Age"].isnull()) & (df["Sex"]=="male"), "Age"] = df.groupby("Sex")["Age"].mean()["male"]
 
 df.isnull().sum()
 
@@ -520,7 +475,6 @@ dff.head()
 
 # knn'in uygulanması.
 from sklearn.impute import KNNImputer
-
 imputer = KNNImputer(n_neighbors=5)
 dff = pd.DataFrame(imputer.fit_transform(dff), columns=dff.columns)
 dff.head()
@@ -543,15 +497,12 @@ missing_values_table(df)
 # sayısal değişkenleri direk median ile oldurma
 df.apply(lambda x: x.fillna(x.median()) if x.dtype != "O" else x, axis=0).isnull().sum()
 # kategorik değişkenleri mode ile doldurma
-df.apply(
-    lambda x: x.fillna(x.mode()[0])
-    if (x.dtype == "O" and len(x.unique()) <= 10)
-    else x,
-    axis=0,
-).isnull().sum()
+df.apply(lambda x: x.fillna(x.mode()[0]) if (x.dtype == "O" and len(x.unique()) <= 10) else x, axis=0).isnull().sum()
 # kategorik değişken kırılımında sayısal değişkenleri doldurmak
 df["Age"].fillna(df.groupby("Sex")["Age"].transform("mean")).isnull().sum()
 # Tahmine Dayalı Atama ile Doldurma
+
+
 
 
 #############################################
@@ -583,23 +534,17 @@ def missing_vs_target(dataframe, target, na_columns):
     temp_df = dataframe.copy()
 
     for col in na_columns:
-        temp_df[col + "_NA_FLAG"] = np.where(temp_df[col].isnull(), 1, 0)
+        temp_df[col + '_NA_FLAG'] = np.where(temp_df[col].isnull(), 1, 0)
 
     na_flags = temp_df.loc[:, temp_df.columns.str.contains("_NA_")].columns
 
     for col in na_flags:
-        print(
-            pd.DataFrame(
-                {
-                    "TARGET_MEAN": temp_df.groupby(col)[target].mean(),
-                    "Count": temp_df.groupby(col)[target].count(),
-                }
-            ),
-            end="\n\n\n",
-        )
+        print(pd.DataFrame({"TARGET_MEAN": temp_df.groupby(col)[target].mean(),
+                            "Count": temp_df.groupby(col)[target].count()}), end="\n\n\n")
 
 
 missing_vs_target(df, "Survived", na_cols)
+
 
 
 ###################
@@ -611,16 +556,14 @@ na_cols = missing_values_table(df, True)
 # sayısal değişkenleri direk median ile oldurma
 df.apply(lambda x: x.fillna(x.median()) if x.dtype != "O" else x, axis=0).isnull().sum()
 # kategorik değişkenleri mode ile doldurma
-df.apply(
-    lambda x: x.fillna(x.mode()[0])
-    if (x.dtype == "O" and len(x.unique()) <= 10)
-    else x,
-    axis=0,
-).isnull().sum()
+df.apply(lambda x: x.fillna(x.mode()[0]) if (x.dtype == "O" and len(x.unique()) <= 10) else x, axis=0).isnull().sum()
 # kategorik değişken kırılımında sayısal değişkenleri doldurmak
 df["Age"].fillna(df.groupby("Sex")["Age"].transform("mean")).isnull().sum()
 # Tahmine Dayalı Atama ile Doldurma
 missing_vs_target(df, "Survived", na_cols)
+
+
+
 
 
 #############################################
@@ -639,20 +582,15 @@ le = LabelEncoder()
 le.fit_transform(df["Sex"])[0:5]
 le.inverse_transform([0, 1])
 
-
 def label_encoder(dataframe, binary_col):
     labelencoder = LabelEncoder()
     dataframe[binary_col] = labelencoder.fit_transform(dataframe[binary_col])
     return dataframe
 
-
 df = load()
 
-binary_cols = [
-    col
-    for col in df.columns
-    if df[col].dtype not in [int, float] and df[col].nunique() == 2
-]
+binary_cols = [col for col in df.columns if df[col].dtype not in [int, float]
+               and df[col].nunique() == 2]
 
 for col in binary_cols:
     label_encoder(df, col)
@@ -662,11 +600,8 @@ df.head()
 df = load_application_train()
 df.shape
 
-binary_cols = [
-    col
-    for col in df.columns
-    if df[col].dtype not in [int, float] and df[col].nunique() == 2
-]
+binary_cols = [col for col in df.columns if df[col].dtype not in [int, float]
+               and df[col].nunique() == 2]
 
 df[binary_cols].head()
 
@@ -696,13 +631,9 @@ pd.get_dummies(df, columns=["Embarked"], dummy_na=True).head()
 
 pd.get_dummies(df, columns=["Sex", "Embarked"], drop_first=True).head()
 
-
 def one_hot_encoder(dataframe, categorical_cols, drop_first=True):
-    dataframe = pd.get_dummies(
-        dataframe, columns=categorical_cols, drop_first=drop_first
-    )
+    dataframe = pd.get_dummies(dataframe, columns=categorical_cols, drop_first=drop_first)
     return dataframe
-
 
 df = load()
 
@@ -732,16 +663,9 @@ df["NAME_EDUCATION_TYPE"].value_counts()
 
 cat_cols, num_cols, cat_but_car = grab_col_names(df)
 
-
 def cat_summary(dataframe, col_name, plot=False):
-    print(
-        pd.DataFrame(
-            {
-                col_name: dataframe[col_name].value_counts(),
-                "Ratio": 100 * dataframe[col_name].value_counts() / len(dataframe),
-            }
-        )
-    )
+    print(pd.DataFrame({col_name: dataframe[col_name].value_counts(),
+                        "Ratio": 100 * dataframe[col_name].value_counts() / len(dataframe)}))
     print("##########################################")
     if plot:
         sns.countplot(x=dataframe[col_name], data=dataframe)
@@ -763,17 +687,9 @@ df.groupby("NAME_INCOME_TYPE")["TARGET"].mean()
 def rare_analyser(dataframe, target, cat_cols):
     for col in cat_cols:
         print(col, ":", len(dataframe[col].value_counts()))
-        print(
-            pd.DataFrame(
-                {
-                    "COUNT": dataframe[col].value_counts(),
-                    "RATIO": dataframe[col].value_counts() / len(dataframe),
-                    "TARGET_MEAN": dataframe.groupby(col)[target].mean(),
-                }
-            ),
-            end="\n\n\n",
-        )
-
+        print(pd.DataFrame({"COUNT": dataframe[col].value_counts(),
+                            "RATIO": dataframe[col].value_counts() / len(dataframe),
+                            "TARGET_MEAN": dataframe.groupby(col)[target].mean()}), end="\n\n\n")
 
 rare_analyser(df, "TARGET", cat_cols)
 
@@ -781,24 +697,18 @@ rare_analyser(df, "TARGET", cat_cols)
 # 3. Rare encoder'ın yazılması.
 #############################################
 
-
 def rare_encoder(dataframe, rare_perc):
     temp_df = dataframe.copy()
 
-    rare_columns = [
-        col
-        for col in temp_df.columns
-        if temp_df[col].dtypes == "O"
-        and (temp_df[col].value_counts() / len(temp_df) < rare_perc).any(axis=None)
-    ]
+    rare_columns = [col for col in temp_df.columns if temp_df[col].dtypes == 'O'
+                    and (temp_df[col].value_counts() / len(temp_df) < rare_perc).any(axis=None)]
 
     for var in rare_columns:
         tmp = temp_df[var].value_counts() / len(temp_df)
         rare_labels = tmp[tmp < rare_perc].index
-        temp_df[var] = np.where(temp_df[var].isin(rare_labels), "Rare", temp_df[var])
+        temp_df[var] = np.where(temp_df[var].isin(rare_labels), 'Rare', temp_df[var])
 
     return temp_df
-
 
 new_df = rare_encoder(df, 0.01)
 
@@ -844,7 +754,6 @@ df.head()
 
 age_cols = [col for col in df.columns if "Age" in col]
 
-
 def num_summary(dataframe, numerical_col, plot=False):
     quantiles = [0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 0.95, 0.99]
     print(dataframe[numerical_col].describe(quantiles).T)
@@ -855,7 +764,6 @@ def num_summary(dataframe, numerical_col, plot=False):
         plt.title(numerical_col)
         plt.show(block=True)
 
-
 for col in age_cols:
     num_summary(df, col, plot=True)
 
@@ -864,7 +772,7 @@ for col in age_cols:
 # Binning
 ###################
 
-df["Age_qcut"] = pd.qcut(df["Age"], 5)
+df["Age_qcut"] = pd.qcut(df['Age'], 5)
 
 #############################################
 # Feature Extraction (Özellik Çıkarımı)
@@ -877,45 +785,35 @@ df["Age_qcut"] = pd.qcut(df["Age"], 5)
 df = load()
 df.head()
 
-df["NEW_CABIN_BOOL"] = df["Cabin"].notnull().astype("int")
+df["NEW_CABIN_BOOL"] = df["Cabin"].notnull().astype('int')
 
 df.groupby("NEW_CABIN_BOOL").agg({"Survived": "mean"})
 
 
 from statsmodels.stats.proportion import proportions_ztest
 
-test_stat, pvalue = proportions_ztest(
-    count=[
-        df.loc[df["NEW_CABIN_BOOL"] == 1, "Survived"].sum(),
-        df.loc[df["NEW_CABIN_BOOL"] == 0, "Survived"].sum(),
-    ],
-    nobs=[
-        df.loc[df["NEW_CABIN_BOOL"] == 1, "Survived"].shape[0],
-        df.loc[df["NEW_CABIN_BOOL"] == 0, "Survived"].shape[0],
-    ],
-)
+test_stat, pvalue = proportions_ztest(count=[df.loc[df["NEW_CABIN_BOOL"] == 1, "Survived"].sum(),
+                                             df.loc[df["NEW_CABIN_BOOL"] == 0, "Survived"].sum()],
 
-print("Test Stat = %.4f, p-value = %.4f" % (test_stat, pvalue))
+                                      nobs=[df.loc[df["NEW_CABIN_BOOL"] == 1, "Survived"].shape[0],
+                                            df.loc[df["NEW_CABIN_BOOL"] == 0, "Survived"].shape[0]])
+
+print('Test Stat = %.4f, p-value = %.4f' % (test_stat, pvalue))
 
 
-df.loc[((df["SibSp"] + df["Parch"]) > 0), "NEW_IS_ALONE"] = "NO"
-df.loc[((df["SibSp"] + df["Parch"]) == 0), "NEW_IS_ALONE"] = "YES"
+df.loc[((df['SibSp'] + df['Parch']) > 0), "NEW_IS_ALONE"] = "NO"
+df.loc[((df['SibSp'] + df['Parch']) == 0), "NEW_IS_ALONE"] = "YES"
 
 df.groupby("NEW_IS_ALONE").agg({"Survived": "mean"})
 
 
-test_stat, pvalue = proportions_ztest(
-    count=[
-        df.loc[df["NEW_IS_ALONE"] == "YES", "Survived"].sum(),
-        df.loc[df["NEW_IS_ALONE"] == "NO", "Survived"].sum(),
-    ],
-    nobs=[
-        df.loc[df["NEW_IS_ALONE"] == "YES", "Survived"].shape[0],
-        df.loc[df["NEW_IS_ALONE"] == "NO", "Survived"].shape[0],
-    ],
-)
+test_stat, pvalue = proportions_ztest(count=[df.loc[df["NEW_IS_ALONE"] == "YES", "Survived"].sum(),
+                                             df.loc[df["NEW_IS_ALONE"] == "NO", "Survived"].sum()],
 
-print("Test Stat = %.4f, p-value = %.4f" % (test_stat, pvalue))
+                                      nobs=[df.loc[df["NEW_IS_ALONE"] == "YES", "Survived"].shape[0],
+                                            df.loc[df["NEW_IS_ALONE"] == "NO", "Survived"].shape[0]])
+
+print('Test Stat = %.4f, p-value = %.4f' % (test_stat, pvalue))
 
 #############################################
 # Text'ler Üzerinden Özellik Türetmek
@@ -939,11 +837,9 @@ df["NEW_NAME_WORD_COUNT"] = df["Name"].apply(lambda x: len(str(x).split(" ")))
 # Özel Yapıları Yakalamak
 ###################
 
-df["NEW_NAME_DR"] = df["Name"].apply(
-    lambda x: len([x for x in x.split() if x.startswith("Dr")])
-)
+df["NEW_NAME_DR"] = df["Name"].apply(lambda x: len([x for x in x.split() if x.startswith("Dr")]))
 
-df.groupby("NEW_NAME_DR").agg({"Survived": ["mean", "count"]})
+df.groupby("NEW_NAME_DR").agg({"Survived": ["mean","count"]})
 
 ###################
 # Regex ile Değişken Türetmek
@@ -951,12 +847,10 @@ df.groupby("NEW_NAME_DR").agg({"Survived": ["mean", "count"]})
 
 df.head()
 
-df["NEW_TITLE"] = df.Name.str.extract(" ([A-Za-z]+)\.", expand=False)
+df['NEW_TITLE'] = df.Name.str.extract(' ([A-Za-z]+)\.', expand=False)
 
 
-df[["NEW_TITLE", "Survived", "Age"]].groupby(["NEW_TITLE"]).agg(
-    {"Survived": "mean", "Age": ["count", "mean"]}
-)
+df[["NEW_TITLE", "Survived", "Age"]].groupby(["NEW_TITLE"]).agg({"Survived": "mean", "Age": ["count", "mean"]})
 
 #############################################
 # Date Değişkenleri Üretmek
@@ -966,27 +860,23 @@ dff = pd.read_csv("datasets/course_reviews.csv")
 dff.head()
 dff.info()
 
-dff["Timestamp"] = pd.to_datetime(dff["Timestamp"], format="%Y-%m-%d")
+dff['Timestamp'] = pd.to_datetime(dff["Timestamp"], format="%Y-%m-%d")
 
 # year
-dff["year"] = dff["Timestamp"].dt.year
+dff['year'] = dff['Timestamp'].dt.year
 
 # month
-dff["month"] = dff["Timestamp"].dt.month
+dff['month'] = dff['Timestamp'].dt.month
 
 # year diff
-dff["year_diff"] = date.today().year - dff["Timestamp"].dt.year
+dff['year_diff'] = date.today().year - dff['Timestamp'].dt.year
 
 # month diff (iki tarih arasındaki ay farkı): yıl farkı + ay farkı
-dff["month_diff"] = (
-    (date.today().year - dff["Timestamp"].dt.year) * 12
-    + date.today().month
-    - dff["Timestamp"].dt.month
-)
+dff['month_diff'] = (date.today().year - dff['Timestamp'].dt.year) * 12 + date.today().month - dff['Timestamp'].dt.month
 
 
 # day name
-dff["day_name"] = dff["Timestamp"].dt.day_name()
+dff['day_name'] = dff['Timestamp'].dt.day_name()
 
 dff.head()
 
@@ -1003,21 +893,17 @@ df["NEW_AGE_PCLASS"] = df["Age"] * df["Pclass"]
 
 df["NEW_FAMILY_SIZE"] = df["SibSp"] + df["Parch"] + 1
 
-df.loc[(df["SEX"] == "male") & (df["Age"] <= 21), "NEW_SEX_CAT"] = "youngmale"
+df.loc[(df['SEX'] == 'male') & (df['Age'] <= 21), 'NEW_SEX_CAT'] = 'youngmale'
 
-df.loc[
-    (df["SEX"] == "male") & (df["Age"] > 21) & (df["Age"] < 50), "NEW_SEX_CAT"
-] = "maturemale"
+df.loc[(df['SEX'] == 'male') & (df['Age'] > 21) & (df['Age'] < 50), 'NEW_SEX_CAT'] = 'maturemale'
 
-df.loc[(df["SEX"] == "male") & (df["Age"] >= 50), "NEW_SEX_CAT"] = "seniormale"
+df.loc[(df['SEX'] == 'male') & (df['Age'] >= 50), 'NEW_SEX_CAT'] = 'seniormale'
 
-df.loc[(df["SEX"] == "female") & (df["Age"] <= 21), "NEW_SEX_CAT"] = "youngfemale"
+df.loc[(df['SEX'] == 'female') & (df['Age'] <= 21), 'NEW_SEX_CAT'] = 'youngfemale'
 
-df.loc[
-    (df["SEX"] == "female") & (df["Age"] > 21) & (df["Age"] < 50), "NEW_SEX_CAT"
-] = "maturefemale"
+df.loc[(df['SEX'] == 'female') & (df['Age'] > 21) & (df['Age'] < 50), 'NEW_SEX_CAT'] = 'maturefemale'
 
-df.loc[(df["SEX"] == "female") & (df["Age"] >= 50), "NEW_SEX_CAT"] = "seniorfemale"
+df.loc[(df['SEX'] == 'female') & (df['Age'] >= 50), 'NEW_SEX_CAT'] = 'seniorfemale'
 
 
 df.head()
@@ -1040,39 +926,33 @@ df.columns = [col.upper() for col in df.columns]
 #############################################
 
 # Cabin bool
-df["NEW_CABIN_BOOL"] = df["CABIN"].notnull().astype("int")
+df["NEW_CABIN_BOOL"] = df["CABIN"].notnull().astype('int')
 # Name count
 df["NEW_NAME_COUNT"] = df["NAME"].str.len()
 # name word count
 df["NEW_NAME_WORD_COUNT"] = df["NAME"].apply(lambda x: len(str(x).split(" ")))
 # name dr
-df["NEW_NAME_DR"] = df["NAME"].apply(
-    lambda x: len([x for x in x.split() if x.startswith("Dr")])
-)
+df["NEW_NAME_DR"] = df["NAME"].apply(lambda x: len([x for x in x.split() if x.startswith("Dr")]))
 # name title
-df["NEW_TITLE"] = df.NAME.str.extract(" ([A-Za-z]+)\.", expand=False)
+df['NEW_TITLE'] = df.NAME.str.extract(' ([A-Za-z]+)\.', expand=False)
 # family size
 df["NEW_FAMILY_SIZE"] = df["SIBSP"] + df["PARCH"] + 1
 # age_pclass
 df["NEW_AGE_PCLASS"] = df["AGE"] * df["PCLASS"]
 # is alone
-df.loc[((df["SIBSP"] + df["PARCH"]) > 0), "NEW_IS_ALONE"] = "NO"
-df.loc[((df["SIBSP"] + df["PARCH"]) == 0), "NEW_IS_ALONE"] = "YES"
+df.loc[((df['SIBSP'] + df['PARCH']) > 0), "NEW_IS_ALONE"] = "NO"
+df.loc[((df['SIBSP'] + df['PARCH']) == 0), "NEW_IS_ALONE"] = "YES"
 # age level
-df.loc[(df["AGE"] < 18), "NEW_AGE_CAT"] = "young"
-df.loc[(df["AGE"] >= 18) & (df["AGE"] < 56), "NEW_AGE_CAT"] = "mature"
-df.loc[(df["AGE"] >= 56), "NEW_AGE_CAT"] = "senior"
+df.loc[(df['AGE'] < 18), 'NEW_AGE_CAT'] = 'young'
+df.loc[(df['AGE'] >= 18) & (df['AGE'] < 56), 'NEW_AGE_CAT'] = 'mature'
+df.loc[(df['AGE'] >= 56), 'NEW_AGE_CAT'] = 'senior'
 # sex x age
-df.loc[(df["Sex"] == "male") & (df["Age"] <= 21), "NEW_SEX_CAT"] = "youngmale"
-df.loc[
-    (df["Sex"] == "male") & (df["Age"] > 21) & (df["Age"] < 50), "NEW_SEX_CAT"
-] = "maturemale"
-df.loc[(df["Sex"] == "male") & (df["Age"] >= 50), "NEW_SEX_CAT"] = "seniormale"
-df.loc[(df["Sex"] == "female") & (df["Age"] <= 21), "NEW_SEX_CAT"] = "youngfemale"
-df.loc[
-    (df["Sex"] == "female") & (df["Age"] > 21) & (df["Age"] < 50), "NEW_SEX_CAT"
-] = "maturefemale"
-df.loc[(df["Sex"] == "female") & (df["Age"] >= 50), "NEW_SEX_CAT"] = "seniorfemale"
+df.loc[(df['Sex'] == 'male') & (df['Age'] <= 21), 'NEW_SEX_CAT'] = 'youngmale'
+df.loc[(df['Sex'] == 'male') & (df['Age'] > 21) & (df['Age'] < 50), 'NEW_SEX_CAT'] = 'maturemale'
+df.loc[(df['Sex'] == 'male') & (df['Age'] >= 50), 'NEW_SEX_CAT'] = 'seniormale'
+df.loc[(df['Sex'] == 'female') & (df['Age'] <= 21), 'NEW_SEX_CAT'] = 'youngfemale'
+df.loc[(df['Sex'] == 'female') & (df['Age'] > 21) & (df['Age'] < 50), 'NEW_SEX_CAT'] = 'maturefemale'
+df.loc[(df['Sex'] == 'female') & (df['Age'] >= 50), 'NEW_SEX_CAT'] = 'seniorfemale'
 
 df.head()
 df.shape
@@ -1111,38 +991,26 @@ df["AGE"] = df["AGE"].fillna(df.groupby("NEW_TITLE")["AGE"].transform("median"))
 
 df["NEW_AGE_PCLASS"] = df["AGE"] * df["PCLASS"]
 
-df.loc[(df["AGE"] < 18), "NEW_AGE_CAT"] = "young"
-df.loc[(df["AGE"] >= 18) & (df["AGE"] < 56), "NEW_AGE_CAT"] = "mature"
-df.loc[(df["AGE"] >= 56), "NEW_AGE_CAT"] = "senior"
+df.loc[(df['AGE'] < 18), 'NEW_AGE_CAT'] = 'young'
+df.loc[(df['AGE'] >= 18) & (df['AGE'] < 56), 'NEW_AGE_CAT'] = 'mature'
+df.loc[(df['AGE'] >= 56), 'NEW_AGE_CAT'] = 'senior'
 
-df.loc[(df["Sex"] == "male") & (df["Age"] <= 21), "NEW_SEX_CAT"] = "youngmale"
-df.loc[
-    (df["Sex"] == "male") & (df["Age"] > 21) & (df["Age"] < 50), "NEW_SEX_CAT"
-] = "maturemale"
-df.loc[(df["Sex"] == "male") & (df["Age"] >= 50), "NEW_SEX_CAT"] = "seniormale"
-df.loc[(df["Sex"] == "female") & (df["Age"] <= 21), "NEW_SEX_CAT"] = "youngfemale"
-df.loc[
-    (df["Sex"] == "female") & (df["Age"] > 21) & (df["Age"] < 50), "NEW_SEX_CAT"
-] = "maturefemale"
-df.loc[(df["Sex"] == "female") & (df["Age"] >= 50), "NEW_SEX_CAT"] = "seniorfemale"
+df.loc[(df['Sex'] == 'male') & (df['Age'] <= 21), 'NEW_SEX_CAT'] = 'youngmale'
+df.loc[(df['Sex'] == 'male') & (df['Age'] > 21) & (df['Age'] < 50), 'NEW_SEX_CAT'] = 'maturemale'
+df.loc[(df['Sex'] == 'male') & (df['Age'] >= 50), 'NEW_SEX_CAT'] = 'seniormale'
+df.loc[(df['Sex'] == 'female') & (df['Age'] <= 21), 'NEW_SEX_CAT'] = 'youngfemale'
+df.loc[(df['Sex'] == 'female') & (df['Age'] > 21) & (df['Age'] < 50), 'NEW_SEX_CAT'] = 'maturefemale'
+df.loc[(df['Sex'] == 'female') & (df['Age'] >= 50), 'NEW_SEX_CAT'] = 'seniorfemale'
 
 
-df = df.apply(
-    lambda x: x.fillna(x.mode()[0])
-    if (x.dtype == "O" and len(x.unique()) <= 10)
-    else x,
-    axis=0,
-)
+df = df.apply(lambda x: x.fillna(x.mode()[0]) if (x.dtype == "O" and len(x.unique()) <= 10) else x, axis=0)
 
 #############################################
 # 4. Label Encoding
 #############################################
 
-binary_cols = [
-    col
-    for col in df.columns
-    if df[col].dtype not in [int, float] and df[col].nunique() == 2
-]
+binary_cols = [col for col in df.columns if df[col].dtype not in [int, float]
+               and df[col].nunique() == 2]
 
 for col in binary_cols:
     df = label_encoder(df, col)
@@ -1177,12 +1045,8 @@ num_cols = [col for col in num_cols if "PASSENGERID" not in col]
 
 rare_analyser(df, "SURVIVED", cat_cols)
 
-useless_cols = [
-    col
-    for col in df.columns
-    if df[col].nunique() == 2
-    and (df[col].value_counts() / len(df) < 0.01).any(axis=None)
-]
+useless_cols = [col for col in df.columns if df[col].nunique() == 2 and
+                (df[col].value_counts() / len(df) < 0.01).any(axis=None)]
 
 # df.drop(useless_cols, axis=1, inplace=True)
 
@@ -1206,9 +1070,7 @@ df.shape
 y = df["SURVIVED"]
 X = df.drop(["PASSENGERID", "SURVIVED"], axis=1)
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.30, random_state=17
-)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=17)
 
 from sklearn.ensemble import RandomForestClassifier
 
@@ -1225,32 +1087,26 @@ dff.dropna(inplace=True)
 dff = pd.get_dummies(dff, columns=["Sex", "Embarked"], drop_first=True)
 y = dff["Survived"]
 X = dff.drop(["PassengerId", "Survived", "Name", "Ticket", "Cabin"], axis=1)
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.30, random_state=17
-)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=17)
 rf_model = RandomForestClassifier(random_state=46).fit(X_train, y_train)
 y_pred = rf_model.predict(X_test)
 accuracy_score(y_pred, y_test)
 
 # Yeni ürettiğimiz değişkenler ne alemde?
 
-
 def plot_importance(model, features, num=len(X), save=False):
-    feature_imp = pd.DataFrame(
-        {"Value": model.feature_importances_, "Feature": features.columns}
-    )
+    feature_imp = pd.DataFrame({'Value': model.feature_importances_, 'Feature': features.columns})
     plt.figure(figsize=(10, 10))
     sns.set(font_scale=1)
-    sns.barplot(
-        x="Value",
-        y="Feature",
-        data=feature_imp.sort_values(by="Value", ascending=False)[0:num],
-    )
-    plt.title("Features")
+    sns.barplot(x="Value", y="Feature", data=feature_imp.sort_values(by="Value",
+                                                                      ascending=False)[0:num])
+    plt.title('Features')
     plt.tight_layout()
     plt.show()
     if save:
-        plt.savefig("importances.png")
+        plt.savefig('importances.png')
 
 
 plot_importance(rf_model, X_train)
+
+
